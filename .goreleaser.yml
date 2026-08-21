@@ -1,0 +1,94 @@
+version: 2
+project_name: traefik-certs-dumper
+
+builds:
+  - binary: traefik-certs-dumper
+    ldflags:
+      - -s -w -X github.com/ldez/traefik-certs-dumper/cmd.version={{.Version}} -X github.com/ldez/traefik-certs-dumper/cmd.commit={{.ShortCommit}} -X github.com/ldez/traefik-certs-dumper/cmd.date={{.Date}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+      - freebsd
+      - openbsd
+    goarch:
+      - amd64
+      - 386
+      - arm
+      - arm64
+    goarm:
+      - 7
+      - 6
+      - 5
+
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goos: windows
+        goarm: 7
+      - goos: windows
+        goarm: 6
+      - goos: windows
+        goarm: 5
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^doc:'
+      - '^chore:'
+      - '^chore\(deps\):'
+      - '^test:'
+      - '^tests:'
+
+release:
+  skip_upload: false
+  github:
+    owner: 'ldez'
+    name: 'traefik-certs-dumper'
+  header: |
+    I hope you enjoyed my work, please consider donating or asking your company to do so.
+    
+    This will be appreciated, thank you :heart:
+  
+    https://donate.ldez.dev
+
+archives:
+  - id: tcd
+    name_template: '{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    formats: [ 'tar.gz' ]
+    format_overrides:
+      - goos: windows
+        formats: [ 'zip' ]
+    files:
+      - LICENSE
+
+dockers_v2:
+  - images:
+      - 'ldez/traefik-certs-dumper'
+      - 'ghcr.io/ldez/traefik-certs-dumper'
+    dockerfile: buildx.Dockerfile
+    platforms:
+      - linux/amd64
+      - linux/arm64
+      - linux/arm/v7
+      - linux/arm/v6
+      - linux/386
+    tags:
+      - 'latest'
+      - 'v{{ .Major }}'
+      - 'v{{ .Major }}.{{ .Minor }}'
+      - '{{ .Tag }}'
+    labels:
+      # https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
+      'org.opencontainers.image.title': '{{.ProjectName}}'
+      'org.opencontainers.image.description': 'Dump ACME data from Traefik to certificates'
+      'org.opencontainers.image.source': '{{.GitURL}}'
+      'org.opencontainers.image.url': '{{.GitURL}}'
+      'org.opencontainers.image.documentation': 'https://github.com/ldez/traefik-certs-dumper'
+      'org.opencontainers.image.created': '{{.Date}}'
+      'org.opencontainers.image.revision': '{{.FullCommit}}'
+      'org.opencontainers.image.version': '{{.Version}}'
